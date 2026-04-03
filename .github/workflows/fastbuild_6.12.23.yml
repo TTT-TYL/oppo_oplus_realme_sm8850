@@ -355,6 +355,37 @@ jobs:
             cd ./KernelSU
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
           fi
+          cd common
+          git clone https://github.com/ravindu644/Droidspaces-OSS
+          for p in Droidspaces-OSS/Documentation/resources/kernel-patches/GKI/*.patch; do
+             echo "应用补丁: $p"
+             if ! patch -p1 --batch -i "$p" 2>/dev/null; then
+                  echo "警告: 补丁 $p 应用失败，继续下一个..."
+             fi
+          done
+          cd ../
+          # echo "CONFIG_EXPERT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          # 修复 [X] PID namespace 和 [X] IPC namespace
+          echo "CONFIG_SYSCTL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_SYSVIPC=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_POSIX_MQUEUE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NAMESPACES=y" >> ./common/arch/arm64/configs/gki_defconfig  # 修正：NAMESPACES（不是NAMESPACE）
+          echo "CONFIG_PID_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IPC_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_UTS_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_USER_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NET_NS=y" >> ./common/arch/arm64/configs/gki_defconfig  # 添加：网络命名空间支持
+          
+          # 修复 [X] devtmpfs support
+          echo "CONFIG_DEVTMPFS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DEVTMPFS_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+  
+          # 修复 cgroup devices support
+          echo "CONFIG_CGROUPS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_CGROUP_DEVICE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_CGROUP_PIDS=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_MEMCG=y" >> ./common/arch/arm64/configs/gki_defconfig
+
           
       - name: 应用lz4 1.10.0 & zstd 1.5.7补丁
         if: inputs.lz4_enable

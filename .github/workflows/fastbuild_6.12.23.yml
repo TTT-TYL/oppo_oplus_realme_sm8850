@@ -357,7 +357,7 @@ jobs:
           fi
           cd common
           git clone https://github.com/TTT-TYL/GKI_KernelSU_SUSFS
-          for p in BreadcrumbsGKI_KernelSU_SUSFS/lxc_docker_patches/a16-6.12/*.patch; do
+          for p in GKI_KernelSU_SUSFS/lxc_docker_patches/a16-6.12/*.patch; do
              echo "应用补丁: $p"
              if ! patch -p1 --batch -i "$p" 2>/dev/null; then
                   echo "警告: 补丁 $p 应用失败，继续下一个..."

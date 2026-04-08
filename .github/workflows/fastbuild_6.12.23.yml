@@ -355,37 +355,13 @@ jobs:
             cd ./KernelSU
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
           fi
+          wget https://github.com/cctv18/kernel-workshop/raw/refs/heads/main/patch/fulldocker/defconfig_append
+          cat ./defconfig_append >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_DM_THIN_PROVISIONING=y" >> ./common/arch/arm64/configs/gki_defconfig
           cd common
-          git clone https://github.com/TTT-TYL/GKI_KernelSU_SUSFS
-          for p in GKI_KernelSU_SUSFS/lxc_docker_patches/a16-6.12/*.patch; do
-             echo "应用补丁: $p"
-             if ! patch -p1 --batch -i "$p" 2>/dev/null; then
-                  echo "警告: 补丁 $p 应用失败，继续下一个..."
-             fi
-          done
-          cd ../
-          # echo "CONFIG_EXPERT=y" >> ./common/arch/arm64/configs/gki_defconfig
-          # 修复 [X] PID namespace 和 [X] IPC namespace
-          echo "CONFIG_SYSCTL=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_SYSVIPC=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_POSIX_MQUEUE=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_NAMESPACES=y" >> ./common/arch/arm64/configs/gki_defconfig  # 修正：NAMESPACES（不是NAMESPACE）
-          echo "CONFIG_PID_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_IPC_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_UTS_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_USER_NS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_NET_NS=y" >> ./common/arch/arm64/configs/gki_defconfig  # 添加：网络命名空间支持
-          
-          # 修复 [X] devtmpfs support
-          echo "CONFIG_DEVTMPFS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_DEVTMPFS_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
-  
-          # 修复 cgroup devices support
-          echo "CONFIG_CGROUPS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_CGROUP_DEVICE=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_CGROUP_PIDS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_MEMCG=y" >> ./common/arch/arm64/configs/gki_defconfig
-
+          wget https://github.com/cctv18/kernel-workshop/raw/refs/heads/main/patch/fulldocker/superkernel.diff
+          patch -p1 -F 1 < superkernel.diff
           
       - name: 应用lz4 1.10.0 & zstd 1.5.7补丁
         if: inputs.lz4_enable

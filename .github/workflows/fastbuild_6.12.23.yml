@@ -356,11 +356,32 @@ jobs:
             cd ./KernelSU
             patch -p1 < 10_enable_susfs_for_ksu.patch || true
           fi
-          wget https://github.com/cctv18/kernel-workshop/raw/refs/heads/main/patch/fulldocker/defconfig_append
-          cat ./defconfig_append >> ./common/arch/arm64/configs/gki_defconfig
+          cat >> ./common/arch/arm64/configs/gki_defconfig << 'EOF'
+          # Droidspaces GKI kernel config
+          # IPC
+          CONFIG_SYSVIPC=y
+          CONFIG_POSIX_MQUEUE=y
+          # Namespaces
+          CONFIG_IPC_NS=y
+          CONFIG_PID_NS=y
+          # HW Access Support
+          CONFIG_DEVTMPFS=y
+          # --- Below configs are optional ---
+          # Docker NAT
+          CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
+          # UFW
+          CONFIG_NETFILTER_XT_TARGET_REJECT=y
+          CONFIG_NETFILTER_XT_TARGET_LOG=y
+          CONFIG_NETFILTER_XT_MATCH_RECENT=y
+          # Fail2ban
+          CONFIG_IP_SET=y
+          CONFIG_IP_SET_HASH_IP=y
+          CONFIG_IP_SET_HASH_NET=y
+          CONFIG_NETFILTER_XT_SET=y
+          EOF
           cd common
-          wget https://raw.githubusercontent.com/cctv18/kernel-workshop/ae0399eaf40dc768dd90715a062b3855f926a8da/patch/fulldocker/superkernel.diff
-          patch -p1 -F 1 < superkernel.diff
+          wget https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/refs/heads/main/Documentation/resources/kernel-patches/GKI/04.use_android_abi_padding_for_sysvipc_task_struct.patch
+          patch -p1 -F 1 < 04.use_android_abi_padding_for_sysvipc_task_struct.patch
           
       - name: 应用lz4 1.10.0 & zstd 1.5.7补丁
         if: inputs.lz4_enable
